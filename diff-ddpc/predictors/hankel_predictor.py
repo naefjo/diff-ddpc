@@ -41,17 +41,17 @@ def generate_hankel_predictor(
     Generates a Hankel Matrix based predictor Hg = [u; y].
     """
     H_u, H_y = generate_hankel_matrices(data, dimensions)
-    u_past = cp.Variable((dimensions.T_past * dimensions.n_act, 1))
-    y_past = cp.Variable((dimensions.T_past * dimensions.n_obs, 1))
-    u = cp.Variable((dimensions.T_fut * dimensions.n_act, 1))
-    y = cp.Variable((dimensions.T_fut * dimensions.n_obs, 1))
+    u_past = cp.Variable((dimensions.T_past, dimensions.n_act))
+    y_past = cp.Variable((dimensions.T_past, dimensions.n_obs))
+    u = cp.Variable((dimensions.T_fut, dimensions.n_act))
+    y = cp.Variable((dimensions.T_fut, dimensions.n_obs))
     g = cp.Variable(H_u.shape[-1])
 
     constraint = [
-        H_u[: dimensions.T_past * dimensions.n_act, :] @ g == u_past,
-        H_u[dimensions.T_past * dimensions.n_act :, :] @ g == u,
-        H_y[: dimensions.T_past * dimensions.n_obs, :] @ g == y_past,
-        H_y[dimensions.T_past * dimensions.n_obs :, :] @ g == y,
+        H_u[: dimensions.T_past * dimensions.n_act, :] @ g == u_past.reshape((-1, 1)),
+        H_u[dimensions.T_past * dimensions.n_act :, :] @ g == u.reshape((-1, 1)),
+        H_y[: dimensions.T_past * dimensions.n_obs, :] @ g == y_past.reshape((-1, 1)),
+        H_y[dimensions.T_past * dimensions.n_obs :, :] @ g == y.reshape((-1, 1)),
         cp.sum(g) == 1,
     ]
     u_mat = np.vstack(

@@ -37,10 +37,10 @@ def generate_multistep_predictor(
 ) -> Model:
     multi_step_predictor = generate_multistep_predictor_matrix(data, dims)
 
-    u_past = cp.Variable((dimensions.T_past * dimensions.n_act, 1))
-    y_past = cp.Variable((dimensions.T_past * dimensions.n_obs, 1))
-    u = cp.Variable((dimensions.T_fut * dimensions.n_act, 1))
-    y = cp.Variable((dimensions.T_fut * dimensions.n_obs, 1))
+    u_past = cp.Variable((dims.T_past, dims.n_act))
+    y_past = cp.Variable((dims.T_past, dims.n_obs))
+    u = cp.Variable((dims.T_fut, dims.n_act))
+    y = cp.Variable((dims.T_fut, dims.n_obs))
 
     u_p_size = dims.T_past * dims.n_act
     y_p_size = dims.T_past * dims.n_obs
@@ -48,7 +48,12 @@ def generate_multistep_predictor(
     Phi_y_p = multi_step_predictor[:, u_p_size : u_p_size + y_p_size]
     Phi_u_f = multi_step_predictor[:, u_p_size + y_p_size :]
     constraints = [
-        cp.Constraint(y == Phi_u_p @ u_past + Phi_y_p @ y_past + Phi_u_f @ u)
+        cp.Constraint(
+            y
+            == Phi_u_p @ u_past.reshape((-1, 1))
+            + Phi_y_p @ y_past.reshape((-1, 1))
+            + Phi_u_f @ u.reshape((-1, 1))
+        )
     ]
 
     return Model(
