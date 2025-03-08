@@ -1,0 +1,2 @@
+from structures import DDPCDimensions
+from trajectroy_structures import TrajectoryData, TrajectoryDataSet
