@@ -16,8 +16,26 @@ class DataDrivenPredictiveController:
         )
         self._problem = cp.Problem(cp.Minimize(problem_cost), problem_constraints)
 
+        self._params: dict[str, cp.Parameter] = dict()
+        self._params.update(cost.params)
+        self.set_params = set()
+
     def forward(self, args):
         pass
 
     def compute_action(self, args):
         pass
+
+    def get_parameter_list(self):
+        return self._params.keys()
+
+    def update_param(self, name: str, val) -> None:
+        """
+        Update the value of a registered parameter
+        """
+        assert (
+            name in self._params
+        ), f"Parameter {name} not in the registered parameters."
+
+        self._params[name].value = val
+        self.set_params.add(name)
