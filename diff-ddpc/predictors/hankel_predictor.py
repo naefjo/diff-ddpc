@@ -41,8 +41,8 @@ def generate_hankel_predictor(
     Generates a Hankel Matrix based predictor Hg = [u; y].
     """
     H_u, H_y = generate_hankel_matrices(data, dimensions)
-    u_past = cp.Variable((dimensions.T_past, dimensions.n_act))
-    y_past = cp.Variable((dimensions.T_past, dimensions.n_obs))
+    u_past = cp.Parameter((dimensions.T_past, dimensions.n_act))
+    y_past = cp.Parameter((dimensions.T_past, dimensions.n_obs))
     u = cp.Variable((dimensions.T_fut, dimensions.n_act))
     y = cp.Variable((dimensions.T_fut, dimensions.n_obs))
     g = cp.Variable(H_u.shape[-1])

@@ -37,8 +37,8 @@ def generate_multistep_predictor(
 ) -> Model:
     multi_step_predictor = generate_multistep_predictor_matrix(data, dims)
 
-    u_past = cp.Variable((dims.T_past, dims.n_act))
-    y_past = cp.Variable((dims.T_past, dims.n_obs))
+    u_past = cp.Parameter((dims.T_past, dims.n_act))
+    y_past = cp.Parameter((dims.T_past, dims.n_obs))
     u = cp.Variable((dims.T_fut, dims.n_act))
     y = cp.Variable((dims.T_fut, dims.n_obs))
 
