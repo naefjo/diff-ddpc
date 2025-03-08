@@ -9,6 +9,12 @@ from .costs import CostFunction
 
 
 class DataDrivenPredictiveController(BaseController):
+    """
+    Implements a (fixed) Predictive Controller using CVXPY.
+
+    Here, fixed indicates that the predictive 'model' does not change throughout the QP solves.
+    """
+
     def __init__(
         self,
         model: Model,
@@ -16,6 +22,13 @@ class DataDrivenPredictiveController(BaseController):
         constraints: List[cp.Constraint],
         solver_opts: Dict,
     ):
+        """
+        args:
+            - model: The predictive model used in the controller
+            - cost: CostFunction instance describing the cost to be *minimized*
+            - constraints: Additional constraints to consider in the optimal control problem
+            - solver_opts: Arguments which are passed to the CVXPY solver.
+        """
         self._model = model
         self._cost = cost
         self._constraints = constraints
@@ -31,16 +44,31 @@ class DataDrivenPredictiveController(BaseController):
         self._params.update(cost.params)
         self.set_params = set()
 
-    def forward(self, argsstate, reference, *args, **kwargs):
+    def forward(self, obs, *args, **kwargs):
         if self.set_params != self._params.keys():
             warn("Not all parameters set in the optimization problem")
 
+        self._set_initial_obs(obs)
         self._problem.solve(**self._solver_opts)
         self.set_params = set()
 
-        self._update_internal_state()
+        action = self._model.variables["u"].value[0, :]
 
-        return self._model.variables["u"][0, :]
+        self._set_initial_action(action)
+
+        return action
+
+    def _set_initial_obs(self, obs) -> None:
+        """
+        Update the cyclic buffer y_past with obs
+        """
+        raise NotImplementedError()
+
+    def _set_initial_action(self, action) -> None:
+        """
+        Update the cyclic buffer u_past with obs
+        """
+        raise NotImplementedError
 
     def get_parameter_list(self):
         return self._params.keys()
@@ -55,9 +83,3 @@ class DataDrivenPredictiveController(BaseController):
 
         self._params[name].value = val
         self.set_params.add(name)
-
-    def _update_internal_state(self):
-        """
-        Updates the past states u_p and y_p
-        """
-        raise NotImplementedError
