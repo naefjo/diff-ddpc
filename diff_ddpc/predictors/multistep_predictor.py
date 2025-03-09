@@ -1,5 +1,5 @@
+import array_api_compat
 import cvxpy as cp
-import numpy as np
 
 from ..structures import DDPCDimensions, TrajectoryDataSet
 from .hankel_predictor import generate_hankel_matrices
@@ -7,29 +7,30 @@ from .structures import Model
 
 
 def generate_multistep_predictor_matrix(data: TrajectoryDataSet, dims: DDPCDimensions):
+    xp = array_api_compat.get_namespace(data.dataset[0].obs_trajectory)
     tp = dims.T_past
     tf = dims.T_fut
     p = dims.n_obs
     m = dims.n_act
     H_u, H_y = generate_hankel_matrices(data, dims)
 
-    Y_p, Y_f = np.vsplit(H_y, [tp * p])
-    U_p, U_f = np.vsplit(H_u, [tp * m])
+    Y_p, Y_f = xp.vsplit(H_y, [tp * p])
+    U_p, U_f = xp.vsplit(H_u, [tp * m])
 
-    Phi = np.zeros((tf * p, (tp + tf) * (m + p)))
+    Phi = xp.zeros((tf * p, (tp + tf) * (m + p)))
     for i in range(tf):
         # (tp*m + tp*p + i*m)
-        Z_lk = np.vstack((U_p, Y_p, U_f[: (i + 1) * m, :]))
+        Z_lk = xp.vstack((U_p, Y_p, U_f[: (i + 1) * m, :]))
         Y_rpk = Y_f[i * p : (i + 1) * p, :]
-        Phi[i * p : (i + 1) * p, : tp * (m + p) + (i + 1) * m] = Y_rpk @ np.linalg.pinv(
+        Phi[i * p : (i + 1) * p, : tp * (m + p) + (i + 1) * m] = Y_rpk @ xp.linalg.pinv(
             Z_lk
         )
 
     Phi_p = Phi[:, : tp * (m + p)]
     Phi_u = Phi[:, tp * (m + p) : tp * (m + p) + tf * m]
     Phi_y = Phi[:, tp * (m + p) + tf * m :]
-    eye_min_phi_y_inv = np.linalg.inv(np.eye(Phi.shape[0]) - Phi_y)
-    return np.hstack((eye_min_phi_y_inv @ Phi_p, eye_min_phi_y_inv @ Phi_u))
+    eye_min_phi_y_inv = xp.linalg.inv(xp.eye(Phi.shape[0]) - Phi_y)
+    return xp.hstack((eye_min_phi_y_inv @ Phi_p, eye_min_phi_y_inv @ Phi_u))
 
 
 def generate_multistep_predictor(
@@ -48,12 +49,10 @@ def generate_multistep_predictor(
     Phi_y_p = multi_step_predictor[:, u_p_size : u_p_size + y_p_size]
     Phi_u_f = multi_step_predictor[:, u_p_size + y_p_size :]
     constraints = [
-        cp.Constraint(
-            y
-            == Phi_u_p @ u_past.reshape((-1, 1))
-            + Phi_y_p @ y_past.reshape((-1, 1))
-            + Phi_u_f @ u.reshape((-1, 1))
-        )
+        y.reshape((-1, 1))
+        == Phi_u_p @ u_past.reshape((-1, 1))
+        + Phi_y_p @ y_past.reshape((-1, 1))
+        + Phi_u_f @ u.reshape((-1, 1))
     ]
 
     return Model(

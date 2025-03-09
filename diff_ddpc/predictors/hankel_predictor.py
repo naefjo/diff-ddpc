@@ -6,6 +6,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from ..structures import DDPCDimensions, TrajectoryDataSet
+
 from ..utils.logging import logger
 from .structures import Model
 
@@ -56,7 +57,7 @@ def _safe_cholesky(A, min_jitter: float = 1e-10, max_jitter: float = 1e-3):
             jitter *= 10
 
     logger.info(
-        f"Added jitter of factor {jitter} to perform the low rank approximation."
+        f"Added jitter of factor {jitter} to perform the low rank approximation.",
     )
     return L
 

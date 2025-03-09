@@ -1,9 +1,13 @@
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import List
+from typing import List, Union
 
 import numpy as np
 from numpy.typing import NDArray
+
+from torch import Tensor
+
+ArrayLike = Union[NDArray, Tensor]
 
 
 @dataclass
@@ -21,8 +25,8 @@ class TrajectoryData:
     Expects dimensions obs: (N,n_obs) and act: (N,n_action) respectively
     """
 
-    obs_trajectory: NDArray
-    act_trajectory: NDArray
+    obs_trajectory: ArrayLike
+    act_trajectory: ArrayLike
 
     def __post_init__(
         self,
