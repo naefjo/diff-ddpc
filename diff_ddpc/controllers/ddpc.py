@@ -49,6 +49,7 @@ class DataDrivenPredictiveController(BaseController):
             warn("Not all parameters set in the optimization problem")
 
         self._set_initial_obs(obs)
+        # TODO: Deal with solver failure.
         self._problem.solve(**self._solver_opts)
         self.set_params = set()
 

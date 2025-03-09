@@ -3,11 +3,12 @@ requires = ["setuptools>=42"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "diff-ddpc"
+name = "diff_ddpc"
 version = "0.1"
 dependencies = [
   "cvxpy",
   "cvxpylayers",
+  "array-api-compat",
   "numpy",
   "torch",
 ]

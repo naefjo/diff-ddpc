@@ -7,6 +7,14 @@ from numpy.typing import NDArray
 
 
 @dataclass
+class DDPCDimensions:
+    T_past: int
+    T_fut: int
+    n_obs: int
+    n_act: int
+
+
+@dataclass
 class TrajectoryData:
     """
     Collect Trajectory data in a common format.

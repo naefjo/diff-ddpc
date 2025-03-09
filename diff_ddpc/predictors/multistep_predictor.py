@@ -1,7 +1,7 @@
 import cvxpy as cp
 import numpy as np
 
-from .. import DDPCDimensions, TrajectoryDataSet
+from ..structures import DDPCDimensions, TrajectoryDataSet
 from .hankel_predictor import generate_hankel_matrices
 from .structures import Model
 
